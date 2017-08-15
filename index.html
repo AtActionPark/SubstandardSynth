@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" name="apple-mobile-web-app-capable" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebAudioSynth</title>
+    <link rel="stylesheet" type="text/css" href="css/stylesheet.css">
+    <link rel="stylesheet" type="text/css" href="css/github.css">
+
+    <script  src="js/tolerableKeyboard.min.js"></script>
+    <script  src="js/highlight.pack.js"></script>
+    <script  src="js/substandardSynth.js"></script>
+    <script  src="js/script.js"></script>
+
+  </head>
+
+  <body>
+    <div class="main">
+      <h1>SUBSTANDARD SYNTH!</h1>
+
+      <p>Ugly and powerful web audio api based synth. Polyphonic, multiple oscillators, bugs, filters and noise generators. No dependency and easily exportable </p>
+
+      <h2>DOWNLOAD</h2>
+
+      <p>Grab the <a href="https://github.com/AtActionPark/SubstandardSynth/blob/master/js/substandardSynth.js">full script</a>, or the <a href="https://github.com/AtActionPark/SubstandardSynth/blob/master/js/substandardSynth.min.js">minified version</a>.</p>
+
+
+      <h2>SET UP</h2>
+      
+        <pre><code class="js">
+          // In Script file
+
+          // We'll first create an audio context and audio node to connect the synth to
+          let context = new AudioContext;
+          let mixNode = context.createGain();
+          mixNode.gain.value = 1;
+          mixNode.connect(context.destination)
+
+          // Set up the synth. Settings will fall back on default values if not provided
+          // We want to make sure that the synth's context is the one we created
+          //  so we can also link it to a keyboard
+
+          let basicSynth = new SubstandardSynth({context:context})
+
+          //In order to play it, we'll add a keyboard
+          // I'll use a TolerableKeyboard (https://github.com/AtActionPark/TolerableKeyboard)
+          //   but any way of mapping an action to a frequency will do 
+          keyboard = new TolerableKeyboard({
+            divID: 'keyboard', 
+            showKey:true, 
+            autoSetUp:false, 
+            firstNote:'C2'
+          })
+
+          // We re-write the keyboard's pressNote and releaseNote methods, 
+          //  and hook them to our synth
+          // The synth play and release note needs 2 arguments: the frequency of the note,
+          // and the delay between the key press and the action
+          keyboard.pressNote = function(frequency){
+            basicSynth.playNote(frequency,0)
+          }
+          keyboard.releaseNote = function(frequency){
+            basicSynth.stopNote(frequency,0)
+          }
+          // The synth can also be played with the remotePlayNotes(notes,time,duration)
+          // it will accept an array of notes (frequency or note name), a delay in seconds,
+          //  and the duration in seconds of the notes
+          //ex: synth.remotePlayNotes(['C3',440,'F#4',880],0,5)
+
+          // In HTML file
+
+          // If not divID was specified during creation, the script looks for &lt;div id="synth">
+          // If it is not present in the HTML page, the constructor will 
+          //   create and append one on the bottom of the page.
+          // For further styling, its better to include it manually where needed
+          &lt;div id="synth">&lt;/div>;
+          &lt;div id="keyboard">&lt;/div>;
+        </pre></code>
+
+      <p>And here you go.</p>
+
+      <div id='synth'></div>
+      <div id="keyboard"></div>
+
+
+      <p>For more customization, have a look at the full options list</p>
+      <p>Check the <a href="blabla">demo</a> for a synth with export, keyboard and visualizers</p>
+     <pre><code>
+        let synth = new SubstandardSynth({
+          context:context,
+          outNode:mixNode,
+          //if allowExport == true and a page root is specified,
+          //every time a setting is changed, will generate a link based on the page root
+          // that will act as a settings export
+          allowExport:true,
+          pageRoot:'https://atactionpark.github.io/SubstandardSynth/'
+          //the id of the div that will hold the synth
+          ID:'synth',
+          voices:8,
+          //the oscillator, noises, and filter can accept multiple objects
+          //oscillator object: {wave: wave type, detune:freq in hz}
+          defaultOscillators:[{wave: 'square', detune: 0},{wave: 'triangle', detune: 2}],
+          //noise object: {type: noise type, filterType: filter type,
+          // cutoff:filter cutoff frequency, volume: noise volume}
+          defaultNoises:[],
+          //filter object:{type: filter type,frequency: filter cutoff frequency,
+          // q: quality factor}
+          defaultFilters:[{type:'lowpass',frequency:3000,q:2}],
+          //envelope parameters in second
+          defaultEnvelope:{peakLevel:0.6,
+                  sustainLevel:0.2,
+                  attackTime:0.1,
+                  decayTime:0.1,
+                  releaseTime:0.1,
+                  //for sustain time, 10 codes for infinite sustain
+                  sustainTime:10},
+          distortion:10,
+          //show the synth panels
+          display:true,
+          //The size is in theory changeable, but most of the positions are hard coded
+          // so big changes will mostly look bad
+          height:400,
+          width:800,
+          topCaseSize:40,
+          caseSize:20,
+          outBorderSize:3,
+          panelBorderSize:1,
+          panelTitleHeight:20,
+          panelBorderColor:'white',
+          outBorderColor:'white',
+          panelTextColor:'black',
+          caseColor:'black',
+          panelColor:'grey',
+          panelTitleColor:'green'
+        });
+    </pre></code>
+
+    </div>
+  </body>
+</html>
